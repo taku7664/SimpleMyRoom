@@ -1,0 +1,14 @@
+.gradle/
+.kotlin/
+build/
+run/
+logs/
+crash-reports/
+.idea/
+.vscode/
+*.iml
+local.properties
+.env
+.env.*
+Thumbs.db
+.DS_Store
