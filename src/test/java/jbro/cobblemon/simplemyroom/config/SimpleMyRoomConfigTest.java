@@ -25,6 +25,7 @@ class SimpleMyRoomConfigTest {
         assertFalse(config.keepActive.defaultEnabled);
         assertEquals(20, config.keepActive.maxActiveRooms);
         assertEquals(64, config.keepActive.maxChunksPerRoom);
+        assertEquals(600, config.keepActive.randomTickAfterVisitSeconds);
         assertTrue(config.customSpawn.enabled);
         assertTrue(config.customSpawn.allowReset);
         assertTrue(config.customSpawn.requireSafePosition);
@@ -70,6 +71,7 @@ class SimpleMyRoomConfigTest {
         config.protection.denialMessageCooldownMillis = -10;
         config.keepActive.maxActiveRooms = 0;
         config.keepActive.maxChunksPerRoom = 0;
+        config.keepActive.randomTickAfterVisitSeconds = 601;
         config.visitorNotifications.maxVisitorsShown = 0;
         config.customSpawn.horizontalSearchRadius = -1;
         config.returnBehavior.safeSearchVerticalRange = 100;
@@ -83,6 +85,7 @@ class SimpleMyRoomConfigTest {
         assertTrue(errors.stream().anyMatch(message -> message.contains("denialMessageCooldownMillis")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("keepActive.maxActiveRooms")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("keepActive.maxChunksPerRoom")));
+        assertTrue(errors.stream().anyMatch(message -> message.contains("keepActive.randomTickAfterVisitSeconds")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("visitorNotifications.maxVisitorsShown")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("customSpawn.horizontalSearchRadius")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("returnBehavior.safeSearchVerticalRange")));

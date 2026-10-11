@@ -90,6 +90,9 @@ public final class SimpleMyRoomConfig {
         if (keepActive.commandCooldownSeconds < 0 || keepActive.commandCooldownSeconds > 3600) {
             errors.add("keepActive.commandCooldownSeconds must be between 0 and 3600.");
         }
+        if (keepActive.randomTickAfterVisitSeconds < 0 || keepActive.randomTickAfterVisitSeconds > 600) {
+            errors.add("keepActive.randomTickAfterVisitSeconds must be between 0 and 600.");
+        }
         if (visitorNotifications.maxVisitorsShown < 1 || visitorNotifications.maxVisitorsShown > 1000) {
             errors.add("visitorNotifications.maxVisitorsShown must be between 1 and 1000.");
         }
@@ -268,6 +271,7 @@ public final class SimpleMyRoomConfig {
         public int maxActiveRooms = 20;
         public int maxChunksPerRoom = 64;
         public int commandCooldownSeconds = 3;
+        public int randomTickAfterVisitSeconds = 600;
         public boolean showChunkCountInStatus = true;
         public boolean logStateChanges = true;
         public boolean logRestoration = true;

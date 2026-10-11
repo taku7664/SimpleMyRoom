@@ -2,10 +2,12 @@ package jbro.cobblemon.simplemyroom.room;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import jbro.cobblemon.simplemyroom.SimpleMyRoom;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,11 +16,24 @@ import net.minecraft.world.level.ChunkPos;
 
 public final class ActiveRoomService {
     private static final int ENTITY_TICKING_RADIUS = 2;
+    private static final int VISIT_SCAN_INTERVAL_TICKS = 20;
     private static final TicketType<UUID> ACTIVE_ROOM_TICKET = TicketType.create(
         "simple_myroom_active_room", Comparator.<UUID>naturalOrder());
 
+    // Read by ServerChunkCacheMixin on the server thread while chunks tick.
+    private static Set<Long> randomTickChunks = Set.of();
+
     private final Map<UUID, Set<ChunkPos>> appliedChunks = new HashMap<>();
+    private final RecentVisitWindow recentVisits = new RecentVisitWindow();
     private MinecraftServer server;
+
+    public void register() {
+        ServerTickEvents.END_SERVER_TICK.register(this::tick);
+    }
+
+    public static boolean ticksWithoutPlayers(ServerLevel level, ChunkPos chunk) {
+        return !randomTickChunks.isEmpty() && RoomDimensions.isRoom(level) && randomTickChunks.contains(chunk.toLong());
+    }
 
     public void start(MinecraftServer server) {
         this.server = server;
@@ -33,7 +48,33 @@ public final class ActiveRoomService {
 
     public void stop() {
         removeAllTickets();
+        recentVisits.clear();
+        randomTickChunks = Set.of();
         server = null;
+    }
+
+    private void tick(MinecraftServer server) {
+        if (this.server != server || server.getTickCount() % VISIT_SCAN_INTERVAL_TICKS != 0) return;
+        long now = server.getTickCount();
+        long windowTicks = SimpleMyRoom.config().keepActive.randomTickAfterVisitSeconds * 20L;
+        if (windowTicks <= 0 || appliedChunks.isEmpty()) {
+            recentVisits.clear();
+            randomTickChunks = Set.of();
+            return;
+        }
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.isSpectator() || !RoomDimensions.isRoom(player.level())) continue;
+            RoomAccess.roomAt(server, (int) Math.floor(player.getX()), (int) Math.floor(player.getZ()))
+                .filter(room -> appliedChunks.containsKey(room.ownerId()))
+                .ifPresent(room -> recentVisits.markVisited(room.ownerId(), now));
+        }
+        recentVisits.forgetExpired(now, windowTicks);
+        Set<Long> chunks = new HashSet<>();
+        appliedChunks.forEach((ownerId, roomChunks) -> {
+            if (!recentVisits.isRecent(ownerId, now, windowTicks)) return;
+            for (ChunkPos chunk : roomChunks) chunks.add(chunk.toLong());
+        });
+        randomTickChunks = chunks.isEmpty() ? Set.of() : Set.copyOf(chunks);
     }
 
     public ChangeResult change(ServerPlayer player, boolean enabled) {
@@ -140,6 +181,7 @@ public final class ActiveRoomService {
     }
 
     private void removeTickets(UUID ownerId) {
+        recentVisits.forget(ownerId);
         Set<ChunkPos> chunks = appliedChunks.remove(ownerId);
         if (chunks == null || server == null) return;
         ServerLevel level = server.getLevel(RoomDimensions.KEY);

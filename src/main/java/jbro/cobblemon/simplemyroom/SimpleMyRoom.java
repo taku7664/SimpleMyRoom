@@ -28,6 +28,7 @@ public final class SimpleMyRoom implements ModInitializer {
             return;
         }
         ActiveRoomService activeRoomService = new ActiveRoomService();
+        activeRoomService.register();
         RoomPreparationService roomPreparationService = new RoomPreparationService();
         roomPreparationService.register();
         RoomService roomService = new RoomService(activeRoomService, roomPreparationService);
