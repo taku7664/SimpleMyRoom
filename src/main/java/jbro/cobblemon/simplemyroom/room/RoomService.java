@@ -83,10 +83,10 @@ public final class RoomService {
 
     private LiteralArgumentBuilder<CommandSourceStack> buildRoot(String rootName) {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(rootName)
-            .requires(source -> source.isPlayer() && SimpleMyRoom.enabled())
+            .requires(source -> SimpleMyRoom.enabled() && (source.isPlayer() || canReload(source)))
             .executes(context -> showRoomInfo(context.getSource().getPlayerOrException(), rootName));
 
-        root.then(Commands.literal("enter")
+        root.then(playerLiteral("enter")
             .executes(context -> enterOwnRoom(context.getSource().getPlayerOrException()))
             .then(Commands.argument("player", StringArgumentType.word())
                 .suggests((context, builder) -> suggestRoomOwners(context.getSource().getServer(), builder))
@@ -94,43 +94,53 @@ public final class RoomService {
                     context.getSource().getPlayerOrException(),
                     StringArgumentType.getString(context, "player")
                 ))));
-        root.then(Commands.literal("exit").executes(context -> exitRoom(context.getSource().getPlayerOrException())));
-        root.then(Commands.literal("public").then(Commands.argument("allowed", BoolArgumentType.bool())
+        root.then(playerLiteral("exit").executes(context -> exitRoom(context.getSource().getPlayerOrException())));
+        root.then(playerLiteral("public").then(Commands.argument("allowed", BoolArgumentType.bool())
             .executes(context -> setPublicAccess(
                 context.getSource().getPlayerOrException(),
                 BoolArgumentType.getBool(context, "allowed")
             ))));
-        root.then(Commands.literal("ban").then(playerNameArgument().executes(context -> banVisitor(
+        root.then(playerLiteral("ban").then(playerNameArgument().executes(context -> banVisitor(
             context.getSource().getPlayerOrException(), StringArgumentType.getString(context, "player")))));
-        root.then(Commands.literal("unban").then(playerNameArgument().executes(context -> unbanVisitor(
+        root.then(playerLiteral("unban").then(playerNameArgument().executes(context -> unbanVisitor(
             context.getSource().getPlayerOrException(), StringArgumentType.getString(context, "player")))));
-        root.then(Commands.literal("trust").then(playerNameArgument().executes(context -> trustPlayer(
+        root.then(playerLiteral("trust").then(playerNameArgument().executes(context -> trustPlayer(
             context.getSource().getPlayerOrException(), StringArgumentType.getString(context, "player")))));
-        root.then(Commands.literal("untrust").then(playerNameArgument().executes(context -> untrustPlayer(
+        root.then(playerLiteral("untrust").then(playerNameArgument().executes(context -> untrustPlayer(
             context.getSource().getPlayerOrException(), StringArgumentType.getString(context, "player")))));
-        root.then(Commands.literal("kick").then(playerNameArgument().executes(context -> kickVisitor(
+        root.then(playerLiteral("kick").then(playerNameArgument().executes(context -> kickVisitor(
             context.getSource().getPlayerOrException(), StringArgumentType.getString(context, "player")))));
-        root.then(Commands.literal("active")
+        root.then(playerLiteral("active")
             .executes(context -> showActiveStatus(context.getSource().getPlayerOrException()))
             .then(Commands.literal("status").executes(context -> showActiveStatus(context.getSource().getPlayerOrException())))
             .then(Commands.literal("on").executes(context -> setActive(context.getSource().getPlayerOrException(), true)))
             .then(Commands.literal("off").executes(context -> setActive(context.getSource().getPlayerOrException(), false))));
-        root.then(Commands.literal("setspawn")
+        root.then(playerLiteral("setspawn")
             .executes(context -> setCustomSpawn(context.getSource().getPlayerOrException()))
             .then(Commands.literal("reset").executes(context -> resetCustomSpawn(context.getSource().getPlayerOrException()))));
-        root.then(Commands.literal("visitors")
+        root.then(playerLiteral("visitors")
             .executes(context -> showVisitors(context.getSource().getPlayerOrException())));
-        root.then(Commands.literal("notify")
+        root.then(playerLiteral("notify")
             .executes(context -> showVisitorNotificationStatus(context.getSource().getPlayerOrException()))
             .then(Commands.literal("on").executes(context -> setVisitorNotifications(context.getSource().getPlayerOrException(), true)))
             .then(Commands.literal("off").executes(context -> setVisitorNotifications(context.getSource().getPlayerOrException(), false))));
 
         if (SimpleMyRoom.config().commands.enableConfigReloadCommand) {
             root.then(Commands.literal("reload")
-                .requires(source -> source.hasPermission(SimpleMyRoom.config().commands.adminPermissionLevel))
-                .executes(context -> reloadConfig(context.getSource().getPlayerOrException())));
+                .requires(RoomService::canReload)
+                .executes(context -> reloadConfig(context.getSource())));
         }
         return root;
+    }
+
+    // Room subcommands act on the calling player; only reload is also open to the console.
+    private static LiteralArgumentBuilder<CommandSourceStack> playerLiteral(String name) {
+        return Commands.literal(name).requires(CommandSourceStack::isPlayer);
+    }
+
+    private static boolean canReload(CommandSourceStack source) {
+        return SimpleMyRoom.config().commands.enableConfigReloadCommand
+            && source.hasPermission(SimpleMyRoom.config().commands.adminPermissionLevel);
     }
 
     private RequiredArgumentBuilder<CommandSourceStack, String> playerNameArgument() {
@@ -548,12 +558,15 @@ public final class RoomService {
         }
     }
 
-    private int reloadConfig(ServerPlayer player) {
+    private int reloadConfig(CommandSourceStack source) {
         ConfigManager.ReloadResult result = SimpleMyRoom.reloadConfig();
-        if (!result.successful()) return fail(player, message(SimpleMyRoom.messages().configReloadFailed, "reason", result.error()));
+        if (!result.successful()) {
+            source.sendSystemMessage(Component.literal(message(SimpleMyRoom.messages().configReloadFailed, "reason", result.error())));
+            return 0;
+        }
         activeRoomService.reconcile();
-        player.sendSystemMessage(Component.literal(SimpleMyRoom.messages().configReloaded));
-        if (SimpleMyRoom.config().general.logConfigReload) SimpleMyRoom.LOGGER.info("Simple MyRoom configuration reloaded by {}.", player.getGameProfile().getName());
+        source.sendSystemMessage(Component.literal(SimpleMyRoom.messages().configReloaded));
+        if (SimpleMyRoom.config().general.logConfigReload) SimpleMyRoom.LOGGER.info("Simple MyRoom configuration reloaded by {}.", source.getTextName());
         return 1;
     }
 

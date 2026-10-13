@@ -215,8 +215,6 @@ public final class SimpleMyRoomConfig {
 
     public static final class VisitorInteractions {
         private static final List<String> DEFAULT_BLOCK_IDS = List.of(
-            "minecraft:chest",
-            "minecraft:trapped_chest",
             "minecraft:crafting_table",
             "minecraft:anvil",
             "minecraft:chipped_anvil",
@@ -228,7 +226,7 @@ public final class SimpleMyRoomConfig {
         public boolean enabled = true;
         public boolean requireEmptyHand = true;
         public boolean denyPlacementAgainstAllowedBlocks = true;
-        public boolean includeOriginalSafeBlockClasses = true;
+        public boolean includeOriginalSafeBlockClasses = false;
         public List<String> allowedBlockIds = DEFAULT_BLOCK_IDS;
     }
 
