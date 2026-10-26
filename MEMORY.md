@@ -1,5 +1,12 @@
 # MEMORY
 
+## [2026-10-26 21:41] 1.0.3 main 최종 빌드·개발 서버 설치
+
+- 코드 병합 `65ac87a` 및 후속 ID 정규화 `363cdfb`까지 main·origin/main·원격 main 일치를 확인했다. 커밋된 `363cdfb`를 F 소스 사본에 `git archive`로 추출한 뒤 최종 assemble 성공. 최종 테스트는 앞선 `check assemble`의 44/44 통과이며 최종 assemble에서는 반복하지 않았다. `jar --validate` 통과.
+- `C:/Users/박주형/Documents/GitHub/Cobblemon-Mods/develop-product/server/mods/simple-myroom-1.0.2.jar`를 `simple-myroom-1.0.3.jar`로 교체했다. 함께 설치된 jbro-policy는 코드 병합 `8d0862784`의 범용 제공자를 포함한다. 서버 전용이므로 개발 클라이언트에는 마이룸을 넣지 않았다. 설치 전 개발 서버 정지·25566 리스너 없음 확인. 기존 설정·방·플레이어 데이터는 바꾸지 않았다.
+- 최종 빌드본과 개발 설치본 SHA-256이 `feae1cb237c91ef546c977f672ae4fadd9ea62b11604cdde6771574f182decc0`로 같다. JAR 클래스에 광장·PvP 차원 ID가 없는 것을 확인했다. 이전 JAR은 `F:/AI/build/hub-pvp-return-5c87/installed-before/server/`에 보관했다.
+- 서버 기동·실게임·대전/관전·재접속 왕복은 미검증이다. VPS·운영·릴리스 제품에는 설치하지 않았다. 후속 main 변경이 이 배포 기록뿐이면 최종 빌드와 기능 코드는 같다.
+
 ## [2026-10-26 21:38] 외부 차원 ID 정규화 보강
 
 - 제공자가 `overworld`처럼 기본 네임스페이스를 생략한 유효 ID를 반환해도 `minecraft:overworld`로 일치하도록 표준형으로 저장한다. 여러 제공자의 목록을 함께 받는 검사도 추가했다.
