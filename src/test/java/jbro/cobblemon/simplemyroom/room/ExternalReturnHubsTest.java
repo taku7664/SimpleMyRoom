@@ -47,6 +47,13 @@ class ExternalReturnHubsTest {
     }
 
     @Test
+    void multipleProvidersUseCanonicalDimensionIds() {
+        ExternalReturnHubs.load(List.<Supplier<?>>of(() -> List.of("overworld"), () -> List.of(TEMPORARY.toString())));
+        assertFalse(ReturnDimensionPolicy.isStale(OUTSIDE, List.of()));
+        assertFalse(ReturnDimensionPolicy.isStale(TEMPORARY, List.of()));
+    }
+
+    @Test
     void invalidProviderDoesNotReplaceThePreviousRules() {
         ExternalReturnHubs.load(List.<Supplier<?>>of(() -> List.of(TEMPORARY.toString())));
         assertThrows(IllegalArgumentException.class,

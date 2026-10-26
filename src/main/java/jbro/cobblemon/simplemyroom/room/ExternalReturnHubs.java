@@ -29,10 +29,11 @@ public final class ExternalReturnHubs {
                 throw new IllegalArgumentException(ENTRYPOINT + " providers must supply a collection of dimension IDs");
             }
             for (Object value : values) {
-                if (!(value instanceof String id) || ResourceLocation.tryParse(id) == null) {
+                ResourceLocation dimension = value instanceof String id ? ResourceLocation.tryParse(id) : null;
+                if (dimension == null) {
                     throw new IllegalArgumentException(ENTRYPOINT + " provider supplied an invalid dimension ID: " + value);
                 }
-                contributed.add(id);
+                contributed.add(dimension.toString());
             }
         }
         dimensions = Set.copyOf(contributed);
