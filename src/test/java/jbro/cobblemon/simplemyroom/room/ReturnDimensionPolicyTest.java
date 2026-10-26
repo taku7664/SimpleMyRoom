@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class ReturnDimensionPolicyTest {
     private static final ResourceLocation OVERWORLD = ResourceLocation.parse("minecraft:overworld");
-    private static final ResourceLocation PLAZA = ResourceLocation.parse("jbro_policy:plaza");
-    private static final List<String> HUBS = List.of("jbro_policy:plaza");
+    private static final ResourceLocation PLAZA = ResourceLocation.parse("integration:hub");
+    private static final List<String> HUBS = List.of("integration:hub");
 
     @Test
     void acceptsEveryDimensionExceptTheRoomDimension() {

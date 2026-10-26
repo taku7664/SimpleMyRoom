@@ -30,6 +30,6 @@ public final class ReturnDimensionPolicy {
     }
 
     private static boolean isOtherHub(ResourceLocation dimension, Collection<String> otherHubs) {
-        return otherHubs.contains(dimension.toString());
+        return otherHubs.contains(dimension.toString()) || ExternalReturnHubs.contains(dimension);
     }
 }

@@ -8,7 +8,9 @@ import jbro.cobblemon.simplemyroom.room.RoomService;
 import jbro.cobblemon.simplemyroom.room.ActiveRoomService;
 import jbro.cobblemon.simplemyroom.room.VisitorNotificationService;
 import jbro.cobblemon.simplemyroom.room.RoomPreparationService;
+import jbro.cobblemon.simplemyroom.room.ExternalReturnHubs;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,7 @@ public final class SimpleMyRoom implements ModInitializer {
             LOGGER.warn("Simple MyRoom is disabled by configuration.");
             return;
         }
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> ExternalReturnHubs.loadProviders());
         ActiveRoomService activeRoomService = new ActiveRoomService();
         activeRoomService.register();
         RoomPreparationService roomPreparationService = new RoomPreparationService();
