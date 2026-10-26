@@ -297,7 +297,7 @@ public final class SimpleMyRoomConfig {
          * Other hub dimensions players hop between, such as a server plaza. Entering from one keeps the return point
          * already saved, and leaving every hub clears it, so exits never bounce between two hubs.
          */
-        public List<String> otherHubDimensions = List.of("jbro_policy:plaza");
+        public List<String> otherHubDimensions = List.of();
     }
 
     public static final class WorldBehavior {
