@@ -21,6 +21,8 @@ public final class RoomWorldInitializer {
             config.createBoundary,
             preserveExisting && config.preserveExistingBlocksOnUpgrade,
             resolveBlock(config.platformBlock, Blocks.GRASS_BLOCK).defaultBlockState(),
+            resolveBlock(config.subsoilBlock, Blocks.DIRT).defaultBlockState(),
+            Math.max(0, config.subsoilDepth),
             resolveBlock(config.boundaryBlock, Blocks.BARRIER).defaultBlockState(),
             minY,
             maxY
@@ -42,6 +44,8 @@ public final class RoomWorldInitializer {
         private final RoomArea area;
         private final boolean preserveExisting;
         private final BlockState platform;
+        private final BlockState subsoil;
+        private final int subsoilDepth;
         private final BlockState boundary;
         private final int minY;
         private final int maxY;
@@ -51,6 +55,7 @@ public final class RoomWorldInitializer {
         private int y;
         private int z;
         private boolean secondSide;
+        private int layer;
 
         private PreparationTask(
             ServerLevel level,
@@ -59,6 +64,8 @@ public final class RoomWorldInitializer {
             boolean createBoundary,
             boolean preserveExisting,
             BlockState platform,
+            BlockState subsoil,
+            int subsoilDepth,
             BlockState boundary,
             int minY,
             int maxY
@@ -67,6 +74,8 @@ public final class RoomWorldInitializer {
             this.area = area;
             this.preserveExisting = preserveExisting;
             this.platform = platform;
+            this.subsoil = subsoil;
+            this.subsoilDepth = subsoilDepth;
             this.boundary = boundary;
             this.minY = minY;
             this.maxY = maxY;
@@ -104,12 +113,22 @@ public final class RoomWorldInitializer {
             return phase == Phase.DONE;
         }
 
+        // Layer 0 is the surface; layers below it are subsoil, which never replaces an existing block on upgrade.
         private void placePlatform() {
-            position.set(x, area.floorY(), z);
+            position.set(x, area.floorY() - layer, z);
             BlockState existing = level.getBlockState(position);
-            if (!preserveExisting || existing.isAir() || existing.is(Blocks.GRASS_BLOCK)) {
-                level.setBlock(position, platform, Block.UPDATE_CLIENTS);
+            if (layer == 0) {
+                if (!preserveExisting || existing.isAir() || existing.is(Blocks.GRASS_BLOCK)) {
+                    level.setBlock(position, platform, Block.UPDATE_CLIENTS);
+                }
+            } else if (!preserveExisting || existing.isAir()) {
+                level.setBlock(position, subsoil, Block.UPDATE_CLIENTS);
             }
+            if (layer < subsoilDepth) {
+                layer++;
+                return;
+            }
+            layer = 0;
             z++;
             if (z > area.maxZ()) {
                 z = area.minZ();

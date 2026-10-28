@@ -50,6 +50,8 @@ class SimpleMyRoomConfigTest {
 
         assertEquals(SimpleMyRoomConfig.defaults().commands.roots, restored.commands.roots);
         assertEquals("minecraft:grass_block", restored.layout.platformBlock);
+        assertEquals("minecraft:dirt", restored.layout.subsoilBlock);
+        assertEquals(2, restored.layout.subsoilDepth);
         assertTrue(json.contains("\"preventUnauthorizedBlockBreak\""));
         assertTrue(json.contains("\"keepActive\""));
         assertTrue(json.contains("\"customSpawn\""));
@@ -76,6 +78,7 @@ class SimpleMyRoomConfigTest {
         config.customSpawn.horizontalSearchRadius = -1;
         config.returnBehavior.safeSearchVerticalRange = 100;
         config.roomPreparation.blocksPerTick = 0;
+        config.layout.subsoilDepth = -1;
 
         List<String> errors = config.validate();
 
@@ -90,5 +93,6 @@ class SimpleMyRoomConfigTest {
         assertTrue(errors.stream().anyMatch(message -> message.contains("customSpawn.horizontalSearchRadius")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("returnBehavior.safeSearchVerticalRange")));
         assertTrue(errors.stream().anyMatch(message -> message.contains("roomPreparation.blocksPerTick")));
+        assertTrue(errors.stream().anyMatch(message -> message.contains("layout.subsoilDepth")));
     }
 }
