@@ -1,5 +1,12 @@
 # MEMORY
 
+## [2026-10-28 18:45] 바닥 밑 흙 2층 (코드) + VPS 기존 방 채우기
+
+- **사용자 요청:** 마이룸 바닥 밑에 흙 2칸을 더 깔고, VPS의 기존 방도 서버를 끄지 않고 똑같이 채운다.
+- **코드(`feature/subsoil-layers` 4d45c04):** `layout.subsoilDepth`(기본 2)·`layout.subsoilBlock`(기본 `minecraft:dirt`)을 추가해 새 방 준비 때 잔디(floorY) 밑 floorY-1~floorY-depth에 깐다. 업그레이드 준비에서는 흙 층이 air만 채운다. 예산은 블록 단위 그대로다. 빌드·테스트는 사용자 요청이 없어 돌리지 않았다(미검증). main 병합·배포 전이다.
+- **VPS(1.0.2 가동 중, 재시작 없음):** tmux 콘솔에 명령만 넣었다. 방 0~9(`myroom:rooms`, x=i*512~+99, z=0~99)를 `forceload add` → `fill … 62 … 63 … minecraft:dirt replace minecraft:air` → `forceload remove` 순으로 처리했다. 기존 강제 로드는 없었고 작업 후에도 없음을 확인했다. 채운 수 19992~20000/20000(방 0·2·5는 기존 블록 일부 보존). 표본 좌표 3곳 흙 확인. 확인용 `say`가 접속자 채팅에 한 줄 보였다 — 다음에는 `say` 대신 출력 없는 확인을 쓴다.
+- 개발·로컬 운영 서버의 기존 방은 채우지 않았다. 새 JAR이 들어가도 기존 방은 자동으로 채워지지 않는다(이미 layout_version 2).
+
 ## [2026-10-26 21:41] 1.0.3 main 최종 빌드·개발 서버 설치
 
 - 코드 병합 `65ac87a` 및 후속 ID 정규화 `363cdfb`까지 main·origin/main·원격 main 일치를 확인했다. 커밋된 `363cdfb`를 F 소스 사본에 `git archive`로 추출한 뒤 최종 assemble 성공. 최종 테스트는 앞선 `check assemble`의 44/44 통과이며 최종 assemble에서는 반복하지 않았다. `jar --validate` 통과.
