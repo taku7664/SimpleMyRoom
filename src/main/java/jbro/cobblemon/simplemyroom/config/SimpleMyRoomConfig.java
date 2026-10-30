@@ -50,6 +50,7 @@ public final class SimpleMyRoomConfig {
         visitorInteractions.allowedBlockIds = normalizeNames(visitorInteractions.allowedBlockIds, VisitorInteractions.DEFAULT_BLOCK_IDS);
         returnBehavior.otherHubDimensions = normalizeNames(returnBehavior.otherHubDimensions, List.of());
         layout.platformBlock = defaultString(layout.platformBlock, "minecraft:grass_block");
+        layout.subsoilBlock = defaultString(layout.subsoilBlock, "minecraft:dirt");
         layout.boundaryBlock = defaultString(layout.boundaryBlock, "minecraft:barrier");
     }
 
@@ -74,6 +75,9 @@ public final class SimpleMyRoomConfig {
         }
         if (layout.floorY < -64 || layout.floorY > 319) {
             errors.add("layout.floorY must be between -64 and 319 for Minecraft 1.21.1.");
+        }
+        if (layout.subsoilDepth < 0 || layout.subsoilDepth > 16 || layout.floorY - layout.subsoilDepth < -64) {
+            errors.add("layout.subsoilDepth must be between 0 and 16 and stay above y=-64.");
         }
         if (layout.spawnYOffset < 0.0 || layout.spawnYOffset > 32.0) {
             errors.add("layout.spawnYOffset must be between 0 and 32.");
@@ -178,6 +182,8 @@ public final class SimpleMyRoomConfig {
         public int gridWidth = 1024;
         public int floorY = 64;
         public String platformBlock = "minecraft:grass_block";
+        public String subsoilBlock = "minecraft:dirt";
+        public int subsoilDepth = 2;
         public String boundaryBlock = "minecraft:barrier";
         public boolean createPlatform = true;
         public boolean createBoundary = true;
